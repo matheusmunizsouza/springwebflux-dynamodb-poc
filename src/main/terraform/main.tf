@@ -11,14 +11,14 @@ provider "aws" {
 }
 
 resource "aws_dynamodb_table" "dynamodb-table" {
-  name           = "Book"
+  name           = "book"
   billing_mode   = "PROVISIONED"
   read_capacity  = 20
   write_capacity = 20
-  hash_key       = "Isbn"
+  hash_key       = "isbn"
 
   attribute {
-    name = "Isbn"
+    name = "isbn"
     type = "S"
   }
 }

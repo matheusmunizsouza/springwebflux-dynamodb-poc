@@ -5,6 +5,7 @@ import com.matheus.springwebfluxdynamodbpoc.service.BookService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
@@ -30,8 +31,14 @@ public class BookResource {
     return bookService.findByIsbn(isbn);
   }
 
+  @GetMapping("/isbn/{isbn}/name/{name}")
+  public Flux<Book> findByIsbnAndName(@PathVariable("isbn") final String isbn,
+      @PathVariable("name") final String name) {
+    return bookService.findByIsbnAndName(isbn, name);
+  }
+
   @PostMapping
-  public Mono<Book> add(final Book book) {
+  public Mono<Book> add(@RequestBody final Book book) {
     return bookService.add(book);
   }
 }

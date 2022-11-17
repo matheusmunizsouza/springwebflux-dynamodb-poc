@@ -11,24 +11,24 @@ import java.util.Objects;
 @DynamoDbBean
 public final class Book {
 
-  public static final String BOOK_TABLE = "Book";
+  public static final String TABLE_NAME = "book";
   private String isbn;
   private String name;
   private String description;
 
   @DynamoDbPartitionKey
-  @DynamoDbAttribute("Isbn")
+  @DynamoDbAttribute("isbn")
   public String getIsbn() {
     return isbn;
   }
 
-  @DynamoDbAttribute("Name")
+  @DynamoDbAttribute("name")
   @JsonInclude(Include.NON_NULL)
   public String getName() {
     return name;
   }
 
-  @DynamoDbAttribute("Description")
+  @DynamoDbAttribute("description")
   @JsonInclude(Include.NON_NULL)
   public String getDescription() {
     return description;
