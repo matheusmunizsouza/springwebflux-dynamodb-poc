@@ -68,4 +68,18 @@ public class PersonService {
         .map(table -> table.putItem(person))
         .thenReturn(person);
   }
+
+  public Mono<Person> delete(String firstname) {
+    return Mono.just(dynamoDbEnhancedAsyncClient.table(Person.TABLE_NAME,
+            TableSchema.fromBean(Person.class)))
+        .map(table -> table.deleteItem(Key.builder().partitionValue(firstname).build()))
+        .map(CompletableFuture::join);
+  }
+
+  public Mono<Person> update(Person person) {
+    return Mono.just(dynamoDbEnhancedAsyncClient.table(Person.TABLE_NAME,
+        TableSchema.fromBean(Person.class)))
+        .map(table -> table.updateItem(person))
+        .map(CompletableFuture::join);
+  }
 }
