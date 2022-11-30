@@ -2,7 +2,8 @@ package com.matheus.springwebfluxdynamodbpoc.controller;
 
 import com.matheus.springwebfluxdynamodbpoc.model.Person;
 import com.matheus.springwebfluxdynamodbpoc.service.PersonService;
-import org.springframework.http.ResponseEntity;
+import com.matheus.springwebfluxdynamodbpoc.vo.request.PaginationRequest;
+import com.matheus.springwebfluxdynamodbpoc.vo.response.PaginationResponse;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,8 +31,10 @@ public class PersonResource {
   }
 
   @GetMapping("/firstname/{firstname}")
-  public Flux<Person> findByFirstName(@PathVariable("firstname") final String firstname) {
-    return personService.findByFirstName(firstname);
+  public Mono<PaginationResponse<Person>> findByFirstName(
+      @PathVariable("firstname") final String firstname,
+      PaginationRequest paginationRequest) {
+    return personService.findByFirstName(firstname, paginationRequest);
   }
 
   @GetMapping("/firstname/{firstname}/lastname/{lastname}")
@@ -41,8 +44,10 @@ public class PersonResource {
   }
 
   @GetMapping("/cpf/{cpf}")
-  public Flux<Person> findByCpf(@PathVariable("cpf") String cpf) {
-    return personService.findByCpf(cpf);
+  public Mono<PaginationResponse<Person>> findByCpf(
+      @PathVariable("cpf") String cpf,
+      PaginationRequest paginationRequest) {
+    return personService.findByCpf(cpf, paginationRequest);
   }
 
   @PostMapping

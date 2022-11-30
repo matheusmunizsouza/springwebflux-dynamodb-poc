@@ -1,6 +1,8 @@
 package com.matheus.springwebfluxdynamodbpoc.service;
 
 import com.matheus.springwebfluxdynamodbpoc.model.Person;
+import com.matheus.springwebfluxdynamodbpoc.vo.request.PaginationRequest;
+import com.matheus.springwebfluxdynamodbpoc.vo.response.PaginationResponse;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -9,7 +11,6 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.PagePublisher;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
@@ -30,14 +31,17 @@ public class PersonService {
         .flatMapMany(PagePublisher::items);
   }
 
-  public Flux<Person> findByFirstName(final String firstName) {
+  public Mono<PaginationResponse<Person>> findByFirstName(final String firstName,
+      PaginationRequest paginationRequest) {
     return Mono.just(dynamoDbEnhancedAsyncClient.table(Person.TABLE_NAME,
             TableSchema.fromBean(Person.class)))
-        .map(table -> table.query(QueryEnhancedRequest.builder()
+        .flatMap(table -> Mono.from(table.query(QueryEnhancedRequest.builder()
             .queryConditional(
                 QueryConditional.keyEqualTo(Key.builder().partitionValue(firstName).build()))
-            .build()))
-        .flatMapMany(PagePublisher::items);
+            .limit(paginationRequest.getLimit())
+            .exclusiveStartKey(paginationRequest.getLastEvaluatedKey())
+            .build())))
+        .map(PaginationResponse::from);
   }
 
   public Mono<Person> findByFirstNameAndLastName(final String firstName, final String lastName) {
@@ -51,15 +55,18 @@ public class PersonService {
         .map(CompletableFuture::join);
   }
 
-  public Flux<Person> findByCpf(final String cpf) {
+  public Mono<PaginationResponse<Person>> findByCpf(final String cpf,
+      PaginationRequest paginationRequest) {
     return Mono.just(
             dynamoDbEnhancedAsyncClient.table(Person.TABLE_NAME, TableSchema.fromBean(Person.class))
                 .index("cpf_index"))
-        .map(table -> table.query(QueryEnhancedRequest.builder()
+        .flatMap(table -> Mono.from(table.query(QueryEnhancedRequest.builder()
             .queryConditional(
                 QueryConditional.keyEqualTo(Key.builder().partitionValue(cpf).build()))
-            .build()))
-        .flatMapMany(page -> page.flatMapIterable(Page::items));
+            .limit(paginationRequest.getLimit())
+            .exclusiveStartKey(paginationRequest.getLastEvaluatedKey())
+            .build())))
+        .map(PaginationResponse::from);
   }
 
   public Mono<Person> add(final Person person) {
@@ -78,7 +85,7 @@ public class PersonService {
 
   public Mono<Person> update(Person person) {
     return Mono.just(dynamoDbEnhancedAsyncClient.table(Person.TABLE_NAME,
-        TableSchema.fromBean(Person.class)))
+            TableSchema.fromBean(Person.class)))
         .map(table -> table.updateItem(person))
         .map(CompletableFuture::join);
   }
